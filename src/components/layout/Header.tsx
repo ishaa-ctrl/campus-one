@@ -9,7 +9,7 @@ import GlobalSearch from '@/components/search/GlobalSearch';
 import NotificationDropdown from '@/components/layout/NotificationDropdown';
 
 export default function Header() {
-  const { profile, signOut } = useAuth();
+  const { profile, loading, signOut } = useAuth();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showMobileSearch, setShowMobileSearch] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
@@ -66,7 +66,9 @@ export default function Header() {
                 )}
               </div>
               <span className="hidden sm:block text-sm font-medium text-campus-text max-w-[120px] truncate">
-                {profile?.full_name || 'User'}
+                {loading
+                  ? <span className="inline-block w-16 h-3.5 bg-campus-border rounded animate-pulse" />
+                  : (profile?.full_name || 'Me')}
               </span>
               <ChevronDown className="w-4 h-4 text-campus-text-secondary hidden sm:block" />
             </button>

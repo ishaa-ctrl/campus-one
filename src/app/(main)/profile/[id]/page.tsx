@@ -27,16 +27,17 @@ export default async function UserProfilePage({ params }: { params: Promise<{ id
   if (!profileRes.data) notFound();
 
   const currentUser = userRes.data?.user;
+  const isOwn = currentUser?.id === id;
 
   return (
     <ProfileClient
       profile={profileRes.data}
+      authEmail={isOwn ? (currentUser?.email || profileRes.data.email) : profileRes.data.email}
       stats={{ notesUploaded: notesRes.count || 0, itemsSold: listingsRes.count || 0, foundItems: foundRes.count || 0 }}
       myNotes={(userNotes.data || []) as any}
       myListings={(userListings.data || []) as any}
       myPosts={(userPosts.data || []) as any}
-      isOwnProfile={currentUser?.id === id}
+      isOwnProfile={isOwn}
     />
   );
 }
-
