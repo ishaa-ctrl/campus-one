@@ -1,5 +1,3 @@
-import { clsx, type ClassValue } from 'clsx';
-
 // Simple cn utility without clsx dependency
 export function cn(...inputs: (string | undefined | null | false)[]) {
   return inputs.filter(Boolean).join(' ');
