@@ -1,5 +1,7 @@
 # 🎓 CampusOne
 
+https://campusone-link.vercel.app/
+
 **Your College, One Platform.**
 
 CampusOne is a full-stack, college-exclusive student platform that brings together academic notes, a student marketplace, lost & found, announcements, and community features — all in one modern, beautiful application.
