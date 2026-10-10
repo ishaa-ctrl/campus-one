@@ -189,7 +189,7 @@ For each bucket, add a storage policy:
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000)
+open https://campusone-link.vercel.app/
 
 ### 9. Seed Demo Data (Optional)
 
@@ -252,4 +252,4 @@ This project is built for educational purposes. Feel free to use and modify.
 
 ---
 
-**Built with ❤️ for students, by students.**
+**Built with ❤️ for students, by student.**
