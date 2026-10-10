@@ -2,11 +2,22 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Mail, Lock, Eye, EyeOff, User, Hash, Building2, BookOpen, School, Loader2 } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, User, Hash, Building2, BookOpen, Loader2 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import toast from 'react-hot-toast';
 import { signUpSchema } from '@/lib/validations/auth';
 import { DEPARTMENTS, SEMESTERS, validateCollegeEmail } from '@/lib/utils';
+import SearchableDropdown, { type DropdownOption } from '@/components/ui/SearchableDropdown';
+import CollegeSelector from '@/components/ui/CollegeSelector';
+
+// Build department options once
+const DEPT_OPTIONS: DropdownOption[] = DEPARTMENTS.map((d) => ({ value: d, label: d }));
+
+// Build semester options once
+const SEM_OPTIONS: DropdownOption[] = SEMESTERS.map((s) => ({
+  value: String(s),
+  label: `Semester ${s}`,
+}));
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -27,7 +38,11 @@ export default function SignUpPage() {
   const updateField = (field: string, value: string | number) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
-      setErrors((prev) => { const n = { ...prev }; delete n[field]; return n; });
+      setErrors((prev) => {
+        const n = { ...prev };
+        delete n[field];
+        return n;
+      });
     }
   };
 
@@ -35,7 +50,6 @@ export default function SignUpPage() {
     e.preventDefault();
     setErrors({});
 
-    // Validate college email
     if (!validateCollegeEmail(formData.email)) {
       const domain = process.env.NEXT_PUBLIC_COLLEGE_EMAIL_DOMAIN || 'your college';
       setErrors({ email: `Please use your college email (@${domain})` });
@@ -56,7 +70,6 @@ export default function SignUpPage() {
     try {
       const supabase = createClient();
 
-      // Check USN uniqueness
       const { data: existingProfile } = await supabase
         .from('profiles')
         .select('usn')
@@ -69,7 +82,6 @@ export default function SignUpPage() {
         return;
       }
 
-      // Sign up
       const { data, error } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
@@ -85,12 +97,22 @@ export default function SignUpPage() {
       });
 
       if (error) {
-        toast.error(error.message);
+        const msg = error.message.toLowerCase();
+        if (
+          msg.includes('failed to fetch') ||
+          msg.includes('fetch') ||
+          msg.includes('network')
+        ) {
+          toast.error(
+            'Unable to connect to the authentication server. Please check your internet connection or verify the Supabase backend service status.'
+          );
+        } else {
+          toast.error(error.message);
+        }
         return;
       }
 
       if (data.user) {
-        // Create profile
         const { error: profileError } = await supabase.from('profiles').insert({
           user_id: data.user.id,
           full_name: formData.full_name,
@@ -103,14 +125,24 @@ export default function SignUpPage() {
 
         if (profileError) {
           console.error('Profile creation error:', profileError);
-          // Profile might be created by trigger, so we proceed
         }
 
-        toast.success('Account created successfully! Please check your email to verify.');
+        toast.success('Account created! Please check your email to verify.');
         router.push('/login');
       }
-    } catch {
-      toast.error('Something went wrong. Please try again.');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : '';
+      if (message.includes('Supabase environment variables are not configured')) {
+        toast.error(
+          'Authentication is not configured on this deployment. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in Vercel settings.'
+        );
+      } else if (message.toLowerCase().includes('fetch') || message.toLowerCase().includes('network')) {
+        toast.error(
+          'Unable to connect to the authentication server. Please check your internet connection or verify the Supabase backend service status.'
+        );
+      } else {
+        toast.error('Something went wrong. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -128,7 +160,7 @@ export default function SignUpPage() {
         <div>
           <label htmlFor="full_name" className="label">Full Name</label>
           <div className="relative">
-            <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-campus-text-secondary" />
+            <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-campus-text-secondary z-10 pointer-events-none" />
             <input
               id="full_name"
               type="text"
@@ -145,7 +177,7 @@ export default function SignUpPage() {
         <div>
           <label htmlFor="email" className="label">College Email</label>
           <div className="relative">
-            <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-campus-text-secondary" />
+            <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-campus-text-secondary z-10 pointer-events-none" />
             <input
               id="email"
               type="email"
@@ -163,7 +195,7 @@ export default function SignUpPage() {
           <div>
             <label htmlFor="password" className="label">Password</label>
             <div className="relative">
-              <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-campus-text-secondary" />
+              <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-campus-text-secondary z-10 pointer-events-none" />
               <input
                 id="password"
                 type={showPassword ? 'text' : 'password'}
@@ -185,7 +217,7 @@ export default function SignUpPage() {
           <div>
             <label htmlFor="confirm_password" className="label">Confirm Password</label>
             <div className="relative">
-              <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-campus-text-secondary" />
+              <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-campus-text-secondary z-10 pointer-events-none" />
               <input
                 id="confirm_password"
                 type={showPassword ? 'text' : 'password'}
@@ -204,7 +236,7 @@ export default function SignUpPage() {
           <div>
             <label htmlFor="usn" className="label">USN (University Seat Number)</label>
             <div className="relative">
-              <Hash className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-campus-text-secondary" />
+              <Hash className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-campus-text-secondary z-10 pointer-events-none" />
               <input
                 id="usn"
                 type="text"
@@ -216,21 +248,22 @@ export default function SignUpPage() {
             </div>
             {errors.usn && <p className="text-campus-danger text-xs mt-1">{errors.usn}</p>}
           </div>
+
+          {/* Department — modern searchable dropdown */}
           <div>
-            <label htmlFor="department" className="label">Department</label>
+            <label htmlFor="department-selector" className="label">Department</label>
             <div className="relative">
-              <Building2 className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-campus-text-secondary" />
-              <select
-                id="department"
+              <Building2 className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-campus-text-secondary z-10 pointer-events-none" />
+              <SearchableDropdown
+                id="department-selector"
+                options={DEPT_OPTIONS}
                 value={formData.department}
-                onChange={(e) => updateField('department', e.target.value)}
-                className="input-field pl-11 appearance-none cursor-pointer"
-              >
-                <option value="">Select Department</option>
-                {DEPARTMENTS.map((dept) => (
-                  <option key={dept} value={dept}>{dept}</option>
-                ))}
-              </select>
+                onChange={(val) => updateField('department', val)}
+                placeholder="Select Department"
+                searchPlaceholder="Search department..."
+                showFullLabel
+                noResultsText="No matching department found."
+              />
             </div>
             {errors.department && <p className="text-campus-danger text-xs mt-1">{errors.department}</p>}
           </div>
@@ -238,37 +271,33 @@ export default function SignUpPage() {
 
         {/* Semester + College */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Semester — modern searchable dropdown */}
           <div>
-            <label htmlFor="semester" className="label">Semester</label>
+            <label htmlFor="semester-selector" className="label">Semester</label>
             <div className="relative">
-              <BookOpen className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-campus-text-secondary" />
-              <select
-                id="semester"
-                value={formData.semester}
-                onChange={(e) => updateField('semester', parseInt(e.target.value))}
-                className="input-field pl-11 appearance-none cursor-pointer"
-              >
-                <option value={0}>Select Semester</option>
-                {SEMESTERS.map((sem) => (
-                  <option key={sem} value={sem}>Semester {sem}</option>
-                ))}
-              </select>
+              <BookOpen className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-campus-text-secondary z-10 pointer-events-none" />
+              <SearchableDropdown
+                id="semester-selector"
+                options={SEM_OPTIONS}
+                value={formData.semester > 0 ? String(formData.semester) : ''}
+                onChange={(val) => updateField('semester', val ? parseInt(val) : 0)}
+                placeholder="Select Semester"
+                searchPlaceholder="Search semester..."
+                noResultsText="Semester not found."
+              />
             </div>
             {errors.semester && <p className="text-campus-danger text-xs mt-1">{errors.semester}</p>}
           </div>
+
+          {/* College — searchable selector across all India */}
           <div>
-            <label htmlFor="college" className="label">College</label>
-            <div className="relative">
-              <School className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-campus-text-secondary" />
-              <input
-                id="college"
-                type="text"
-                placeholder="Your college name"
-                value={formData.college}
-                onChange={(e) => updateField('college', e.target.value)}
-                className="input-field pl-11"
-              />
-            </div>
+            <label htmlFor="college-selector" className="label">College</label>
+            <CollegeSelector
+              id="college-selector"
+              value={formData.college}
+              onChange={(val) => updateField('college', val)}
+              placeholder="Search colleges across India..."
+            />
             {errors.college && <p className="text-campus-danger text-xs mt-1">{errors.college}</p>}
           </div>
         </div>

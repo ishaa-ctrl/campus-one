@@ -35,15 +35,44 @@ export default function LoginPage() {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
 
       if (error) {
-        toast.error(error.message);
+        const msg = error.message.toLowerCase();
+        if (
+          msg.includes('invalid login credentials') ||
+          msg.includes('invalid credentials')
+        ) {
+          toast.error('Incorrect email or password. Please try again.');
+        } else if (msg.includes('email not confirmed')) {
+          toast.error('Please verify your email address before signing in.');
+        } else if (
+          msg.includes('failed to fetch') ||
+          msg.includes('fetch') ||
+          msg.includes('network')
+        ) {
+          toast.error(
+            'Unable to connect to the authentication server. Please check your internet connection or verify the Supabase backend service status.'
+          );
+        } else {
+          toast.error(error.message);
+        }
         return;
       }
 
       toast.success('Welcome back!');
       router.push('/dashboard');
       router.refresh();
-    } catch {
-      toast.error('Something went wrong. Please try again.');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : '';
+      if (message.includes('Supabase environment variables are not configured')) {
+        toast.error(
+          'Authentication is not configured on this deployment. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in Vercel settings.'
+        );
+      } else if (message.toLowerCase().includes('fetch') || message.toLowerCase().includes('network')) {
+        toast.error(
+          'Unable to connect to the authentication server. Please check your internet connection or verify the Supabase backend service status.'
+        );
+      } else {
+        toast.error('Something went wrong. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
