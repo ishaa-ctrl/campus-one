@@ -1,37 +1,44 @@
 'use client';
 
+import { memo } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { FileText, Download, Calendar, User } from 'lucide-react';
+import { FileText, Download } from 'lucide-react';
 import type { Note } from '@/types/database';
-import { formatDate, getSemesterLabel } from '@/lib/utils';
+import { getSemesterLabel } from '@/lib/utils';
 
 interface NoteCardProps {
   note: Note;
   index?: number;
 }
 
-export default function NoteCard({ note, index = 0 }: NoteCardProps) {
-  const fileTypeColors: Record<string, string> = {
-    pdf: 'bg-red-50 text-red-600',
-    doc: 'bg-blue-50 text-blue-600',
-    docx: 'bg-blue-50 text-blue-600',
-    ppt: 'bg-orange-50 text-orange-600',
-    pptx: 'bg-orange-50 text-orange-600',
-  };
+const fileTypeColors: Record<string, string> = {
+  pdf: 'bg-red-50 text-red-600',
+  doc: 'bg-blue-50 text-blue-600',
+  docx: 'bg-blue-50 text-blue-600',
+  ppt: 'bg-orange-50 text-orange-600',
+  pptx: 'bg-orange-50 text-orange-600',
+};
 
+function NoteCardComponent({ note, index = 0 }: NoteCardProps) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, delay: index * 0.05 }}
+      transition={{ duration: 0.25, delay: Math.min(index * 0.03, 0.3) }}
     >
       <Link href={`/notes/${note.id}`} className="block">
         <div className="card card-hover p-4 h-full">
           {/* Thumbnail / File Type Icon */}
           <div className="relative h-36 bg-gradient-to-br from-campus-purple-light to-campus-purple-50 rounded-card-sm flex items-center justify-center mb-4 overflow-hidden">
             {note.thumbnail_url ? (
-              <img src={note.thumbnail_url} alt={note.title} className="w-full h-full object-cover" />
+              <img
+                src={note.thumbnail_url}
+                alt={note.title}
+                loading="lazy"
+                decoding="async"
+                className="w-full h-full object-cover"
+              />
             ) : (
               <FileText className="w-12 h-12 text-campus-purple/40" />
             )}
@@ -55,7 +62,7 @@ export default function NoteCard({ note, index = 0 }: NoteCardProps) {
           {/* Uploader */}
           {note.uploader && (
             <div className="flex items-center gap-2 mt-3 pt-3 border-t border-campus-border">
-              <div className="w-5 h-5 rounded-full bg-campus-purple flex items-center justify-center">
+              <div className="w-5 h-5 rounded-full bg-campus-purple flex items-center justify-center shrink-0">
                 <span className="text-[8px] font-semibold text-white">
                   {note.uploader.full_name?.charAt(0)}
                 </span>
@@ -70,3 +77,6 @@ export default function NoteCard({ note, index = 0 }: NoteCardProps) {
     </motion.div>
   );
 }
+
+export default memo(NoteCardComponent);
+

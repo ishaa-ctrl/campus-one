@@ -26,8 +26,8 @@ const config: Config = {
         },
       },
       fontFamily: {
-        sans: ['Inter', 'Poppins', 'system-ui', 'sans-serif'],
-        display: ['Poppins', 'Inter', 'system-ui', 'sans-serif'],
+        sans: ['var(--font-inter)', 'Inter', 'var(--font-poppins)', 'Poppins', 'system-ui', 'sans-serif'],
+        display: ['var(--font-poppins)', 'Poppins', 'var(--font-inter)', 'Inter', 'system-ui', 'sans-serif'],
       },
       borderRadius: {
         'card': '18px',

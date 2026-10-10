@@ -9,15 +9,18 @@ export const metadata = {
 export default async function NotesPage() {
   const supabase = await createClient();
 
-  const { data: notes } = await supabase
-    .from('notes')
-    .select('*, uploader:profiles!uploaded_by(*), subject:subjects(*)')
-    .order('created_at', { ascending: false });
+  const [notesRes, subjectsRes] = await Promise.all([
+    supabase
+      .from('notes')
+      .select('*, uploader:profiles!uploaded_by(user_id, full_name, avatar_url), subject:subjects(id, name, code, semester)')
+      .order('created_at', { ascending: false })
+      .limit(60),
+    supabase
+      .from('subjects')
+      .select('id, name, code, semester')
+      .order('name'),
+  ]);
 
-  const { data: subjects } = await supabase
-    .from('subjects')
-    .select('*')
-    .order('name');
-
-  return <NotesClient initialNotes={notes || []} subjects={subjects || []} />;
+  return <NotesClient initialNotes={(notesRes.data || []) as any} subjects={(subjectsRes.data || []) as any} />;
 }
+

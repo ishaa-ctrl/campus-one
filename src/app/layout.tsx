@@ -1,6 +1,20 @@
 import type { Metadata } from 'next';
+import { Inter, Poppins } from 'next/font/google';
 import { Toaster } from 'react-hot-toast';
 import './globals.css';
+
+const inter = Inter({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-inter',
+});
+
+const poppins = Poppins({
+  weight: ['400', '500', '600', '700', '800'],
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-poppins',
+});
 
 export const metadata: Metadata = {
   title: 'CampusOne - Your College, One Platform',
@@ -14,7 +28,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${inter.variable} ${poppins.variable}`}>
       <body className="antialiased">
         {children}
         <Toaster

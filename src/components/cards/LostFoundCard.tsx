@@ -1,5 +1,6 @@
 'use client';
 
+import { memo } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { MapPin, Calendar, AlertCircle, CheckCircle2 } from 'lucide-react';
@@ -11,19 +12,25 @@ interface LostFoundCardProps {
   index?: number;
 }
 
-export default function LostFoundCard({ post, index = 0 }: LostFoundCardProps) {
+function LostFoundCardComponent({ post, index = 0 }: LostFoundCardProps) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, delay: index * 0.05 }}
+      transition={{ duration: 0.25, delay: Math.min(index * 0.03, 0.3) }}
     >
       <Link href={`/lost-found/${post.id}`} className="block">
         <div className="card card-hover overflow-hidden h-full">
           {/* Image */}
           <div className="relative h-40 bg-campus-bg overflow-hidden">
             {post.image_url ? (
-              <img src={post.image_url} alt={post.item_name} className="w-full h-full object-cover" />
+              <img
+                src={post.image_url}
+                alt={post.item_name}
+                loading="lazy"
+                decoding="async"
+                className="w-full h-full object-cover"
+              />
             ) : (
               <div className="w-full h-full flex items-center justify-center">
                 <AlertCircle className="w-12 h-12 text-campus-text-secondary/30" />
@@ -47,11 +54,11 @@ export default function LostFoundCard({ post, index = 0 }: LostFoundCardProps) {
             
             <div className="space-y-1.5">
               <div className="flex items-center gap-1.5 text-xs text-campus-text-secondary">
-                <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
+                <MapPin className="w-3.5 h-3.5 shrink-0" />
                 <span className="truncate">{post.location}</span>
               </div>
               <div className="flex items-center gap-1.5 text-xs text-campus-text-secondary">
-                <Calendar className="w-3.5 h-3.5 flex-shrink-0" />
+                <Calendar className="w-3.5 h-3.5 shrink-0" />
                 <span>{formatDate(post.date)}</span>
               </div>
             </div>
@@ -59,7 +66,7 @@ export default function LostFoundCard({ post, index = 0 }: LostFoundCardProps) {
             {/* Poster */}
             {post.poster && (
               <div className="flex items-center gap-2 mt-3 pt-3 border-t border-campus-border">
-                <div className="w-5 h-5 rounded-full bg-campus-purple flex items-center justify-center flex-shrink-0">
+                <div className="w-5 h-5 rounded-full bg-campus-purple flex items-center justify-center shrink-0">
                   <span className="text-[8px] font-semibold text-white">
                     {post.poster.full_name?.charAt(0)}
                   </span>
@@ -75,3 +82,6 @@ export default function LostFoundCard({ post, index = 0 }: LostFoundCardProps) {
     </motion.div>
   );
 }
+
+export default memo(LostFoundCardComponent);
+

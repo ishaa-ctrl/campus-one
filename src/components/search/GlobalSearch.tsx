@@ -32,22 +32,33 @@ export default function GlobalSearch() {
     }
 
     setLoading(true);
+    const controller = new AbortController();
+
     const timer = setTimeout(async () => {
       try {
-        const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+        const res = await fetch(`/api/search?q=${encodeURIComponent(query.trim())}`, {
+          signal: controller.signal,
+        });
         if (res.ok) {
           const data = await res.json();
           setResults(data);
           setIsOpen(true);
         }
-      } catch (err) {
-        console.error('Search error:', err);
+      } catch (err: any) {
+        if (err?.name !== 'AbortError') {
+          console.error('Search error:', err);
+        }
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
       }
-    }, 300);
+    }, 250);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
   }, [query]);
 
   const hasResults = results && (

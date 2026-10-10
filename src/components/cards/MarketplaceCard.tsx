@@ -1,5 +1,6 @@
 'use client';
 
+import { memo } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Tag, MapPin } from 'lucide-react';
@@ -11,29 +12,35 @@ interface MarketplaceCardProps {
   index?: number;
 }
 
-export default function MarketplaceCard({ item, index = 0 }: MarketplaceCardProps) {
-  const conditionColors: Record<string, string> = {
-    new: 'bg-emerald-50 text-emerald-600',
-    like_new: 'bg-blue-50 text-blue-600',
-    good: 'bg-amber-50 text-amber-600',
-    fair: 'bg-orange-50 text-orange-600',
-    poor: 'bg-red-50 text-red-600',
-  };
+const conditionColors: Record<string, string> = {
+  new: 'bg-emerald-50 text-emerald-600',
+  like_new: 'bg-blue-50 text-blue-600',
+  good: 'bg-amber-50 text-amber-600',
+  fair: 'bg-orange-50 text-orange-600',
+  poor: 'bg-red-50 text-red-600',
+};
 
+function MarketplaceCardComponent({ item, index = 0 }: MarketplaceCardProps) {
   const imageUrl = item.images?.[0]?.image_url;
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, delay: index * 0.05 }}
+      transition={{ duration: 0.25, delay: Math.min(index * 0.03, 0.3) }}
     >
       <Link href={`/marketplace/${item.id}`} className="block">
         <div className="card card-hover overflow-hidden h-full">
           {/* Image */}
           <div className="relative h-44 bg-campus-bg overflow-hidden">
             {imageUrl ? (
-              <img src={imageUrl} alt={item.title} className="w-full h-full object-cover" />
+              <img
+                src={imageUrl}
+                alt={item.title}
+                loading="lazy"
+                decoding="async"
+                className="w-full h-full object-cover"
+              />
             ) : (
               <div className="w-full h-full flex items-center justify-center">
                 <Tag className="w-12 h-12 text-campus-text-secondary/30" />
@@ -56,9 +63,9 @@ export default function MarketplaceCard({ item, index = 0 }: MarketplaceCardProp
             <div className="flex items-center gap-3 text-xs text-campus-text-secondary">
               <span className="badge-gray">{getCategoryLabel(item.category)}</span>
               {item.location && (
-                <span className="flex items-center gap-1">
-                  <MapPin className="w-3 h-3" />
-                  {item.location}
+                <span className="flex items-center gap-1 truncate">
+                  <MapPin className="w-3 h-3 shrink-0" />
+                  <span className="truncate">{item.location}</span>
                 </span>
               )}
             </div>
@@ -66,7 +73,7 @@ export default function MarketplaceCard({ item, index = 0 }: MarketplaceCardProp
             {/* Seller */}
             {item.seller && (
               <div className="flex items-center gap-2 mt-3 pt-3 border-t border-campus-border">
-                <div className="w-5 h-5 rounded-full bg-campus-purple flex items-center justify-center flex-shrink-0">
+                <div className="w-5 h-5 rounded-full bg-campus-purple flex items-center justify-center shrink-0">
                   <span className="text-[8px] font-semibold text-white">
                     {item.seller.full_name?.charAt(0)}
                   </span>
@@ -82,3 +89,6 @@ export default function MarketplaceCard({ item, index = 0 }: MarketplaceCardProp
     </motion.div>
   );
 }
+
+export default memo(MarketplaceCardComponent);
+

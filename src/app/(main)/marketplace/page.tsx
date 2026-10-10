@@ -11,9 +11,11 @@ export default async function MarketplacePage() {
 
   const { data: items } = await supabase
     .from('marketplace_items')
-    .select('*, seller:profiles!seller_id(*), images:marketplace_images(*)')
+    .select('*, seller:profiles!seller_id(user_id, full_name, avatar_url), images:marketplace_images(id, image_url, display_order)')
     .eq('status', 'active')
-    .order('created_at', { ascending: false });
+    .order('created_at', { ascending: false })
+    .limit(60);
 
-  return <MarketplaceClient initialItems={items || []} />;
+  return <MarketplaceClient initialItems={(items || []) as any} />;
 }
+

@@ -1,5 +1,7 @@
 import { createBrowserClient } from '@supabase/ssr';
 
+let clientInstance: ReturnType<typeof createBrowserClient> | null = null;
+
 export function createClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey =
@@ -13,5 +15,11 @@ export function createClient() {
       'in your Vercel project settings (or .env.local for local dev).'
     );
   }
-  return createBrowserClient(supabaseUrl, supabaseAnonKey);
+
+  if (!clientInstance) {
+    clientInstance = createBrowserClient(supabaseUrl, supabaseAnonKey);
+  }
+
+  return clientInstance;
 }
+

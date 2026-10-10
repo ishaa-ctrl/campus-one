@@ -1,5 +1,6 @@
 'use client';
 
+import { memo } from 'react';
 import { motion } from 'framer-motion';
 import { Calendar, Megaphone, BookOpen, Briefcase, Sun, Info } from 'lucide-react';
 import type { Announcement } from '@/types/database';
@@ -18,19 +19,19 @@ const categoryConfig: Record<string, { icon: typeof Megaphone; color: string; bg
   general: { icon: Info, color: 'text-gray-600', bg: 'bg-gray-50' },
 };
 
-export default function AnnouncementCard({ announcement, index = 0 }: AnnouncementCardProps) {
+function AnnouncementCardComponent({ announcement, index = 0 }: AnnouncementCardProps) {
   const config = categoryConfig[announcement.category] || categoryConfig.general;
   const Icon = config.icon;
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, delay: index * 0.05 }}
+      transition={{ duration: 0.25, delay: Math.min(index * 0.03, 0.3) }}
     >
       <div className="card p-5 hover:shadow-card-hover transition-all duration-300">
         <div className="flex gap-4">
-          <div className={`w-11 h-11 rounded-xl ${config.bg} flex items-center justify-center flex-shrink-0`}>
+          <div className={`w-11 h-11 rounded-xl ${config.bg} flex items-center justify-center shrink-0`}>
             <Icon className={`w-5 h-5 ${config.color}`} />
           </div>
           <div className="flex-1 min-w-0">
@@ -47,7 +48,7 @@ export default function AnnouncementCard({ announcement, index = 0 }: Announceme
                 {formatDate(announcement.created_at)}
               </span>
               {announcement.creator && (
-                <span className="text-xs text-campus-text-secondary">
+                <span className="text-xs text-campus-text-secondary truncate">
                   by {announcement.creator.full_name}
                 </span>
               )}
@@ -58,3 +59,6 @@ export default function AnnouncementCard({ announcement, index = 0 }: Announceme
     </motion.div>
   );
 }
+
+export default memo(AnnouncementCardComponent);
+

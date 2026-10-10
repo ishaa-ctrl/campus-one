@@ -35,13 +35,17 @@ export default function NotificationDropdown() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const fetchNotifications = async () => {
+  const fetchedRef = useRef(false);
+
+  const fetchNotifications = async (force = false) => {
+    if (loading || (!force && fetchedRef.current)) return;
     try {
       setLoading(true);
       const res = await fetch('/api/notifications');
       if (res.ok) {
         const data = await res.json();
         setNotifications(data || []);
+        fetchedRef.current = true;
       }
     } catch (err) {
       console.error('Failed to fetch notifications:', err);
@@ -51,7 +55,7 @@ export default function NotificationDropdown() {
   };
 
   const toggleDropdown = () => {
-    if (!isOpen) {
+    if (!isOpen && !fetchedRef.current) {
       fetchNotifications();
     }
     setIsOpen(!isOpen);

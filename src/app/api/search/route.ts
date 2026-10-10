@@ -15,20 +15,20 @@ export async function GET(request: NextRequest) {
   const [notesRes, marketplaceRes, lostFoundRes] = await Promise.all([
     supabase
       .from('notes')
-      .select('*, uploader:profiles!uploaded_by(full_name, avatar_url)')
+      .select('id, title, semester, subject_name')
       .or(`title.ilike.${searchPattern},description.ilike.${searchPattern},subject_name.ilike.${searchPattern}`)
       .order('created_at', { ascending: false })
       .limit(5),
     supabase
       .from('marketplace_items')
-      .select('*, seller:profiles!seller_id(full_name, avatar_url), images:marketplace_images(image_url)')
+      .select('id, title, price, category')
       .eq('status', 'active')
       .or(`title.ilike.${searchPattern},description.ilike.${searchPattern}`)
       .order('created_at', { ascending: false })
       .limit(5),
     supabase
       .from('lost_found_posts')
-      .select('*, poster:profiles!posted_by(full_name, avatar_url)')
+      .select('id, item_name, type, location')
       .eq('status', 'active')
       .or(`item_name.ilike.${searchPattern},description.ilike.${searchPattern},location.ilike.${searchPattern}`)
       .order('created_at', { ascending: false })

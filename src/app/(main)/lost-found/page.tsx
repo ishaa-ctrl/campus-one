@@ -10,9 +10,11 @@ export default async function LostFoundPage() {
   const supabase = await createClient();
   const { data: posts } = await supabase
     .from('lost_found_posts')
-    .select('*, poster:profiles!posted_by(*)')
+    .select('*, poster:profiles!posted_by(user_id, full_name, avatar_url)')
     .eq('status', 'active')
-    .order('created_at', { ascending: false });
+    .order('created_at', { ascending: false })
+    .limit(60);
 
-  return <LostFoundClient initialPosts={posts || []} />;
+  return <LostFoundClient initialPosts={(posts || []) as any} />;
 }
+
